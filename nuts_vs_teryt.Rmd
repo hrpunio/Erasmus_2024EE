@@ -1,0 +1,62 @@
+## NUTS
+
+```
+NUTS id : 00 00      0        00      00     000     (12 digits)
+           1. 2.     3.        4.      5.      6.    (6 groups)
+```
+
+1. macroregion/makroregion (01, 02, ..., 07) 
+
+2. province/województwo (00, 02, ..., 32) 
+
+3. region/region (1, 2)
+
+4. subregion/podregion (00, 01, ..., 73) 
+
+5. County (powiatu (00, 01, ..., 59 - powiat; 60, ..., 99 - miasto na prawach powiatu) - dwa znaki
+
+6. community/gmina or part of community/części gmin (000......, gdzie ostatni znak stanowi symbol rodzaju jednostki)  - trzy znaki
+
+## TERYT
+
+```
+TERYT id:  00        00      000     - łącznie 7 znaków
+            1.        2.       3.
+```
+
+1. province/województw (00, 02, ..., 32)       - dwa znaki
+
+2. county/powiat (00, 01, ..., 59 - powiat; 60, ..., 99 - miasto na prawach powiatu) - dwa znaki
+
+3. community/gmina or part of community/części gmin (000......, gdzie ostatni znak oznacza rodzaj jednostki) - trzy znaki
+
+## Etymology and demography
+
+There are 7 macroregions (NUTS1) and 16 provinces (NUTS2) in Poland.
+Province in Polish is „prowincja” (due to both are from Latin), but actually 
+Polish administrative provice is called „województwo”, from [verb] „wodzić” -- ie commanding (the armed 
+troops in this context).  This is an old term/custom from the 14th century, 
+where Poland was divided into provinces (every province
+ruled by a „wojewoda” ie chief of that province). More can be found
+at Wikipedia (https://en.wikipedia.org/wiki/Administrative_divisions_of_Poland)
+
+In Poland 2nd level administrative unit is called „powiat” (county). 
+NUTS3 consists of 380 counties grouped into 72 subregions.
+In ancient Poland powiat was called
+„starostwo” and the head of a „starostwo” was „starosta”. 
+„Stary” means Old, so „starosta” is an old (and thus wise) person. 
+BTW the head of powiat is „starosta” as 600 years ago:-)
+
+![](./polska_nuts3-2016_r.png){width=80%}
+
+The 3rd level administrative unit is called „gmina” (community). 
+There are (approximately) 380 counties and 2750 communities in Poland. 
+
+As Poland population is 38,5 mln and the area equals 312,7
+sq kilometers (120 persons per 1 sqkm) on the average each powiat has 820 sqkm and each community
+has 113.5 sqkm or approximately 100 thousand persons per „powiat” and 14 thousand per „gmina”.
+
+## Bibliography
+
+https://bdl.stat.gov.pl/bdl/metadane/teryt/kod
+

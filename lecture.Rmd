@@ -1,0 +1,292 @@
+---
+title: 'R: practical mini intro'
+author:
+- name: Tomasz Przechlewski
+  email: t.plata-przechlewski@psw.kwidzyn.edu.pl
+  affiliation: Powiślańska Szkoła Wyższa (Kwidzyn/Poland)
+date: "Jan. 2021"
+output: html_document
+description: (c) Tomasz Przechlewski / CC-BY license
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Main Statistical Loop (MSL)
+
+Load data →Transform data→ Apply procedures→ Write report
+
+## Load data
+
+```
+df <- read.csv(file, sep=',')
+```
+
+Function `read.csv` tries to be intelligent one. What looks like a number
+is converted to a number. What does not look like a number
+is converted to a string. Sometimes it can fails...
+
+In such a case one can help with `colClasses`:
+
+```
+df <- read.csv(file,
+colClasses=c('factor', 'character', rep('numeric', 50), 'character'),
+  sep = ';', dec = ',', header=T, na.string="NA" )
+                                  ^^^^^^^^^^^^^^
+## id should be character not number
+df <- read.csv("suicidesPL.csv", sep=',', 
+               colClasses = c('id'='character'))
+```
+
+If one insists
+
+```
+install.packages("readxl")
+bank_df <- read_xlsx(path = "file.xlsx")
+```
+
+Dataframe is sort of a spreadsheet.
+It contains multiple columns and each column can store numbers, strings and other data types
+(dates for example).
+
+## Transform data
+
+The most time consuming and frustrating stage.
+
+```
+library("dplyr")
+library("tidyverse")
+```
+
+`%>%` pipeline operator (see examples below)
+
+passes object from the left to the function from the right as its (this function)
+first (implicit) argument
+
+```
+## typical usage
+resulting_df <- initial_df %>% function_returning_df() %>%
+  function_returning_df() %>%
+    function_returning_df() %>%
+     function_returning_df()
+```
+
+**filter and/or select**
+
+`filter(condition)`  returns rows for which `condition=T`
+
+```
+## examples
+filter(age > 30)
+filter(age > 30 & age < 50)
+filter(age == 18) ## equality 
+```
+
+`c %in cvector` returns T is `cvector` contains `c`
+(c/cvector are string/string vector)
+
+```
+## kraj = country in Polish
+kraje <- c('PL', 'PT')
+## only PL/PT
+filter(kraj %in kraje)
+```
+
+`select(cnames)` returns only columns declared in vector `cnames`
+
+```
+## rok = year in Polish
+select(kraj, rok)
+```
+
+get rid of all columns except `kraj` and `rok`
+
+**compute new values**
+
+`mutate(c1, c2, c3, ...)` computes new columns
+
+```
+## age is computed as %% of the mean
+ndf <- df %>% mutate (age = age / sum(age) * 100 ) 
+
+## cumulative sum of nc ad squared t
+ndf <- df %>% mutate(snc = cumsum(nc), sqt = t*t) 
+```
+
+`summarise(c1, c2, c3...)` compute summary values (usually used used with `group_by`)
+
+`group_by(cols)` group rows by values of column(s) from vector `cols`.
+Subsequent **operations** are performed **on groups**.
+
+```
+## mean age, median age by sex
+ndf <- df %>%  group_by(sex) %>%
+  summarise (mean = mean(age), median(age)) %>%
+  ungroup()
+```
+
+summary functions: `mean`, `sum`, `median`, `first`, `last`,  `n` (number of rows)
+
+**recode**
+
+sort of computing new values, so always inside `mutate`
+
+```
+mutate(new=recode(old,
+old1   = new1,
+old2   = new2,
+  ...
+oldN = newN),
+
+## example
+
+## recode ISO2 to ISO3
+mutate(geo=recode(geo,
+              'PL'   = 'POL',
+              'PT'   = 'POR'))
+```
+
+```
+mutate( age.class = case_when(age < 6 ~ "small",  
+            age < 11 ~ "medium", 
+            age < 16 ~ "large",
+            TRUE ~ "huge") ) %>%
+
+```
+
+**reshape**
+
+Join frames, merge frames and pivot frames.
+
+**join frames horizontally**
+
+`left_join(x, y, by=c)` join `x` with `y` by common values
+from column `c` (`c` can be a vector defining joining set of columns)
+
+```
+df <- left_join(x, y, by="c")
+## column c in x but d in y:
+df <- left_join(x, y, by=c("c"="d"))
+
+## by two columns
+df <- x %>% left_join(y, by=c("c"="d", "e"="f"))
+
+## Join three tables x, y, z into one
+df <- x %>% left_join(y, by=c("c"="d", "e"="f")) %>%
+  left_join(z, by=c("c", "e"))
+```
+
+**merge frames vertically**
+
+`z <- bind_rows(x, y)` bind frames `x` and `y` (append rows from `y` to `x`)
+
+**transform frame from wide to long**
+
+`pivot_longer (cols, name_to=ncolum, values_to=vcolum)` cols are transformed into 2 columns:
+
+* `cols` names are values in column `ncolumn`
+* `cols` values are values in column `vcolumn`
+
+Example:  column `pl` contain COVID cases for PL;
+column `cz` contain COVID cases for CZ;
+column `de` contain COVID cases for DE. We apply `pivot_longer`
+
+
+```
+ndf <- df %>%
+pivot_longer(cols = c(pl, cs, de), 
+   names_to = "geo", values_to = "cases")
+```
+
+Now `ndf` contains 2 columns `geo` and `cases` while original
+frame has 3 columns (`pl`, `cs`, `de`); Almost the same but if we have 27 countries
+and will perform similar transformation we still end up with 2 columns (instead of 27).
+In databases redefining column structure is costly, while adding rows is no-problem
+
+**transform frame from long to wide**
+
+`pivot_wider(names_from = ncolumn, values_from = vcolumn) %>%` reverse of
+ `pivot_longer` transforms *long* format to *wide* format. Names of the columns are
+from `ncolumn`; values are from `vcolumn`
+
+```
+ndf <- df pivot_wider(names_from = geo, values_from = cases)
+```
+
+
+### Apply procedures
+
+#### Descriptive
+
+`mean`, `median`, `quantile`, `sd` `summary`
+
+```
+s <- df %>% group_by(sex) %>%
+summarise( m = mean(age, na.rm=T), me = median(age), 
+  q1 = quantile(age, probs=0.25),
+  s = sd(age))
+```
+
+
+#### Graphs
+
+```
+library("ggplot2") 
+```
+In basic form simple syntax:
+
+```
+## Define `source` dataframe as first argument
+## inside aes define x and y coordinates (sometimes x is enough)
+ggplot(df, aes(x=..., y=...)) +
+ geom_xxx()
+```
+where `geom_xxx` is a drawing function (`geom_bar` to draw bars for example)
+
+**bar charts**
+
+```
+p1 <- ggplot(df, aes(x = colx, y=coly)) +
+  geom_bar(stat="identity") +
+  xlab(label=lx) +
+  ylab(label=ly) +
+  ggtitle("title") +
+  coord_flip()
+p1
+```
+
+**dot/line plots**
+
+```
+p1 <- ggplot(df, aes(x = colx, y=coly)) +
+  geom_line() +
+  ##geom_point()
+  xlab(label=lx) +
+  ylab(label=ly) +
+  ggtitle("title") 
+p1
+```
+
+**box plot**
+
+```
+pow <- ggplot(df, aes(x=rok, y=nadwaga)) +
+  geom_boxplot() +
+  ylab("#") +
+  xlab('')
+pow
+
+```
+
+#### Linear regression
+
+```
+lm1 <- lm(data=df, y ~ age + genderF + SES );
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+summary(lm1)
+```
+
+### Write report
+
+...
