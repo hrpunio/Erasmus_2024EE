@@ -9,7 +9,7 @@
 library("bdl")
 library("tidyverse")
 #install.packages("bdl")
-options(bdl.api_private_key ='19c1cfc8-faec-4db5-9e9a-08db64593a4a')
+options(bdl.api_private_key ='####################################')
 
 # Download data from BDL database
 
